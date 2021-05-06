@@ -7,6 +7,18 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        password = request.form.get('password')
+
+        user = User.query.filter_by(email = email).first()
+        if user:
+            if check_password_hash(user.password, password):
+                flash('Logged in successfully!', category='success')
+            else:
+                flash('Incorrect password.', category='error')
+        else:
+            flash('User does not exists', category='error')
     data = request.form
     print(data)
     return render_template("login.html")
@@ -24,8 +36,10 @@ def signup():
         password2 = request.form.get('password2')
         terms = request.form.get('terms')
 
-
-        if len(email) < 4:
+        user = User.query.filter_by(email = email).first()
+        if user:
+            flash('User already exists with that email address!', category="error")
+        elif len(email) < 4:
             flash('Email must be longer!', category='error')
         elif password1 != password2:
             flash('Your passwords do not match!', category='error')
